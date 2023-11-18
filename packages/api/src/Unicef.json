@@ -1,0 +1,32 @@
+[
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_fundId",
+                "type": "uint256"
+            },
+            {
+                "name": "_uid",
+                "type": "bytes32"
+            },
+            {
+                "name": "_dataIndices",
+                "type": "uint256[]"
+            },
+            {
+                "name": "_leaves",
+                "type": "bytes32[]"
+            },
+            {
+                "name": "_proofs",
+                "type": "bytes32[][]"
+            }
+        ],
+        "name": "verify",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

@@ -5,6 +5,7 @@ import { Address, encodeFunctionData } from 'viem'
 import { getPublicProvider } from './provider'
 import { getNetwork } from './network'
 import { abi as walletABI } from './Account.json'
+import unicefABI from './Unicef.json'
 import { buildUserOperationAndHash, sendUserOperationToBundler } from './userOperationHelper'
 
 const app: express.Express = express()
@@ -51,7 +52,7 @@ app.get('/proof', async (req, res) => {
 
 app.post('/build', async (req, res) => {
     try {
-        const { owner, chainId, proof, uid } = req.body
+        const { owner, chainId, uid, fundId, dataIndices, leaves, proofs } = req.body
         const chain = getNetwork(chainId)
         const provider = getPublicProvider(chain)
         const network = getNetwork(Number(chainId))
@@ -60,19 +61,18 @@ app.post('/build', async (req, res) => {
 
         const [nonce, initCode] = await getNonceAndInitCode(provider, owner)
 
-        // function verify(bytes32 _uuid, bytes32[] memory _leaves, bytes32[][] memory _proofs) public {}
-        // const callData = encodeFunctionData({
-        //     abi: walletABI, // todo unicef contract abi
-        //     functionName: 'verify',
-        //     args: [uid, proof.leaves, proof.proofs]
-        // })
+        const callData = encodeFunctionData({
+            abi: unicefABI, // todo unicef contract abi
+            functionName: 'verify',
+            args: [fundId, uid, dataIndices, leaves, proofs]
+        })
 
-        const callData = '0x'
+        // const callData = '0x'
 
         const uoCallData = encodeFunctionData({
             abi: walletABI,
             functionName: 'execute',
-            args: [address, 0, callData]
+            args: ['todo deployed unicef contract', 0, callData]
         })
 
         const userOperationAndHash = await buildUserOperationAndHash(chain, address, nonce, uoCallData, initCode)
