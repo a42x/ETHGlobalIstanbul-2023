@@ -99,23 +99,31 @@ async function encryptoMerkleProof() {
     let tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
     let root = tree.getRoot().toString('hex');
     console.log("root: ", '0x' + root);
-    const leaf = keccak256('data4');
+    let utf8Encode = new TextEncoder();
+    console.log(utf8Encode.encode("90"));
+    const leaf = keccak256('90');
     console.log("leaf: ", '0x' + leaf.toString('hex'));
     const proof = tree.getProof(leaf).map(x => '0x'+ x.data.toString('hex'));
     console.log("proof: ", proof);
     console.log(tree.verify(proof, leaf, root));
-    const input = proof[0] + proof[1] + proof[2];
-    console.log("input: ", input);
+    const input = JSON.stringify(proof);
+    console.log(input);
     const ciphertext = CryptoJS.AES.encrypt(input, 'secret').toString();
     console.log("ciphertext: ", ciphertext);
     const bytes  = CryptoJS.AES.decrypt(ciphertext, 'secret');
     const originalText = bytes.toString(CryptoJS.enc.Utf8);
-    const decrypted = [
-        originalText.slice(0,66),
-        originalText.slice(66,132),
-        originalText.slice(132, 198)
-    ];
-    console.log("decrypted: ", decrypted);
+    console.log("originalText: ", originalText);
+    const cipherLeaf = CryptoJS.AES.encrypt('90', 'secret').toString();
+    console.log("cipherLeaf: ", cipherLeaf);
+    const leafbytes  = CryptoJS.AES.decrypt(cipherLeaf, 'secret');
+    const originalTextLeaf = leafbytes.toString(CryptoJS.enc.Utf8);
+    console.log("originalTextLeaf: ", originalTextLeaf);
+    // const decrypted = [
+    //     originalText.slice(0,66),
+    //     originalText.slice(66,132),
+    //     originalText.slice(132, 198)
+    // ];
+    // console.log("decrypted: ", decrypted);
 }
 
 async function main() {

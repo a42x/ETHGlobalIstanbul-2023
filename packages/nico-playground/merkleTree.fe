@@ -1,15 +1,11 @@
-contract MerkleProof{
-    pub fn verify(root: bytes32, leaf: bytes32, proof: Array<bytes32, 100>) -> bool{
-        let computed_hash: bytes32 = leaf
+contract GuestBook {
+  messages: Map<address, String<100>>
 
-        for element in proof{
-            if computed_hash < element{
-                computed_hash = keccak256(computed_hash + element)
-            }
-            else{
-                computed_hash = keccak256(element + computed_hash)
-            }
-        }
-        return computed_hash == root
-    }
+  pub fn sign(mut self, ctx: Context, book_msg: String<100>) {
+    self.messages[ctx.msg_sender()] = book_msg
+  }
+
+  pub fn get_msg(self, addr: address) -> String<100> {
+    return self.messages[addr].to_mem()
+  }
 }
