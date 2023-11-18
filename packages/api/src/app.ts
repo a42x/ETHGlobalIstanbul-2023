@@ -1,12 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import { getContractAddress, getEncryptedLeaf, getEncryptedProof, getNonceAndInitCode } from './helper'
-import { Address, encodeFunctionData } from 'viem'
+import { Address, encodeFunctionData, toHex } from 'viem'
 import { getPublicProvider } from './provider'
 import { getNetwork } from './network'
 import { abi as walletABI } from './Account.json'
 import unicefABI from './Unicef.json'
 import { buildUserOperationAndHash, sendUserOperationToBundler } from './userOperationHelper'
+import { keccak256 } from 'viem'
 
 const app: express.Express = express()
 
@@ -41,13 +42,22 @@ app.get('/balance', async (req, res) => {
     res.json({ balance })
 })
 
-app.get('/proof', async (req, res) => {
-    const { chainId, uid, index } = req.query
+app.get('/proofs', async (req, res) => {
+    const { chainId, uid, indices } = req.query
     const network = getNetwork(Number(chainId))
     const publicClient = getPublicProvider(network)
-    const proof = await getEncryptedProof(uid as string, BigInt(Number(index)), publicClient)
-    const leaf = await getEncryptedLeaf(uid as string, BigInt(Number(index)), publicClient)
-    return res.status(200).json({ proof, leaf })
+
+    const proofPromises = (indices as string)
+        .split(',')
+        .map((index: string) => getEncryptedProof(uid as string, BigInt(Number(index)), publicClient))
+    const leafPromises = (indices as string)
+        .split(',')
+        .map((index: string) => getEncryptedLeaf(uid as string, BigInt(Number(index)), publicClient))
+
+    const proofs = await Promise.all(proofPromises)
+    const leaves = await Promise.all(leafPromises)
+
+    return res.status(200).json({ proofs, leaves })
 })
 
 app.post('/build', async (req, res) => {
@@ -59,12 +69,18 @@ app.post('/build', async (req, res) => {
         const publicClient = getPublicProvider(network)
         const address = await getContractAddress(owner as Address, 42n, publicClient)
 
-        const [nonce, initCode] = await getNonceAndInitCode(provider, owner)
+        const [nonce, initCode] = await getNonceAndInitCode(provider, address)
+
+        const leavesHashes = leaves.map((leaf: string) => keccak256(toHex(leaf)))
+
+        console.log({
+            args: [fundId, uid, dataIndices, leavesHashes, [proofs]]
+        })
 
         const callData = encodeFunctionData({
             abi: unicefABI, // todo unicef contract abi
             functionName: 'verify',
-            args: [fundId, uid, dataIndices, leaves, proofs]
+            args: [fundId, uid, dataIndices, leavesHashes, [proofs]]
         })
 
         // const callData = '0x'
@@ -72,7 +88,7 @@ app.post('/build', async (req, res) => {
         const uoCallData = encodeFunctionData({
             abi: walletABI,
             functionName: 'execute',
-            args: ['0xc6bb54d682CfD6e9a9BDc4e2079DC4fEa45c41Fb', 0, callData]
+            args: ['0xFf34995FB05f943Bdabb5501edAd4d89c729Ea20', 0, callData] // call unicef contract
         })
 
         const userOperationAndHash = await buildUserOperationAndHash(chain, address, nonce, uoCallData, initCode)
@@ -90,7 +106,7 @@ app.post('/build', async (req, res) => {
 
 app.post('/send', async (req, res) => {
     try {
-        const { userOperation } = req.body
+        const userOperation = req.body
         const chainId = 11155111 //todo
         const chain = getNetwork(chainId)
 
