@@ -1,5 +1,4 @@
 import { BundlerClient, getUserOperationHash, UserOperation, waitForUserOperationReceipt } from 'permissionless'
-import { randomBytes } from 'ethers/lib/utils'
 import { abi as PaymasterABI } from './Paymaster.json'
 
 import { getBundlerClient } from './bundler'
@@ -11,8 +10,10 @@ type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
 const paymasterAccount = privateKeyToAccount(process.env.PAYMASTER_SIGNER_PRIVATE_KEY as Hex)
 
-function generateDummySignature(): Hex {
-    return `0x${Buffer.from(randomBytes(65)).toString('hex')}`
+console.log('Paymaster address: ', paymasterAccount.address)
+
+async function generateDummySignature(): Promise<Hex> {
+    return await paymasterAccount.signMessage({ message: '0xdeadbeef2' })
 }
 
 async function sponsorUserOperation(
@@ -30,7 +31,7 @@ async function sponsorUserOperation(
     // generate paymasterAndData with dummy signature
     // assign dummy paymasterAndData
     userOperation.paymasterAndData = concat([
-        process.env.PAYMASTER_SIGNER_PRIVATE_KEY as Address,
+        process.env.PAYMASTER as Address,
         encodeAbiParameters(
             [
                 { name: 'validUntil', type: 'uint48' },
@@ -55,7 +56,7 @@ async function sponsorUserOperation(
     userOperation.preVerificationGas = estimatedGas.preVerificationGas
     // 4倍しておく
     userOperation.verificationGasLimit =
-        estimatedGas.verificationGasLimit * 4n < 500000n ? 500000n : estimatedGas.verificationGasLimit * 4n
+        estimatedGas.verificationGasLimit * 5n < 500000n ? 500000n : estimatedGas.verificationGasLimit * 5n
 
     // calculate paymaster hash
     const hash = (await publicClient.readContract({
@@ -107,10 +108,10 @@ export async function buildUserOperationAndHash(
         nonce,
         initCode,
         callData,
-        maxFeePerGas: gasPrice.fast.maxFeePerGas,
-        maxPriorityFeePerGas: gasPrice.fast.maxPriorityFeePerGas,
+        maxFeePerGas: gasPrice.fast.maxFeePerGas * 2n,
+        maxPriorityFeePerGas: gasPrice.fast.maxPriorityFeePerGas * 2n,
         // dummy signature
-        signature: generateDummySignature(),
+        signature: await generateDummySignature(),
         // dummy
         paymasterAndData: '0x'
     }

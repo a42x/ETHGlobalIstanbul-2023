@@ -1,6 +1,7 @@
 import { Address, concat, encodeFunctionData, getContract, Hex, parseAbi, PublicClient } from 'viem'
 import { abi as walletABI } from './Account.json'
 import { abi as factoryABI } from './Factory.json'
+import storageABI from './Storage.json'
 
 export async function getDeposit(senderAddress: Address, publicClient: PublicClient): Promise<bigint> {
     const account = getContract({
@@ -50,16 +51,25 @@ export async function getNonceAndInitCode(publicClient: PublicClient, address: A
         const nonce = await getNonce(address, publicClient)
         return [nonce, '0x']
     } catch (_e) {
-        const initCode = createInitCode(process.env.FACTORY as Address, address, BigInt(0))
+        const initCode = createInitCode(process.env.FACTORY as Address, address, BigInt(42))
         return [0n, initCode]
     }
 }
 
 export async function getEncryptedProof(uid: string, index: bigint, publicClient: PublicClient): Promise<string> {
     const account = getContract({
-        address: '' as Address,
-        abi: factoryABI, // todo storage contract abi
+        address: '0x22318ebcd939C3b4eCd5CA5322B3A216d47f18B5' as Address,
+        abi: storageABI, // todo storage contract abi
         publicClient
     })
-    return (await account.read.getEncryptedMerkleProof([uid, index])) as string
+    return (await account.read.encryptedMerkleProofs([uid, index])) as string
+}
+
+export async function getEncryptedLeaf(uid: string, index: bigint, publicClient: PublicClient): Promise<string> {
+    const account = getContract({
+        address: '0x22318ebcd939C3b4eCd5CA5322B3A216d47f18B5' as Address,
+        abi: storageABI, // todo storage contract abi
+        publicClient
+    })
+    return (await account.read.encryptedLeaves([uid, index])) as string
 }
