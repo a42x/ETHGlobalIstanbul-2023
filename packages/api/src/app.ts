@@ -72,7 +72,7 @@ app.post('/build', async (req, res) => {
         const uoCallData = encodeFunctionData({
             abi: walletABI,
             functionName: 'execute',
-            args: ['todo deployed unicef contract', 0, callData]
+            args: ['0xc6bb54d682CfD6e9a9BDc4e2079DC4fEa45c41Fb', 0, callData]
         })
 
         const userOperationAndHash = await buildUserOperationAndHash(chain, address, nonce, uoCallData, initCode)
