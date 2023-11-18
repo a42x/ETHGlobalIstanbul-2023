@@ -1,0 +1,24 @@
+{
+  "name": "ETHGlobal Istanbul",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Hi",
+  "main": "index.js",
+  "scripts": {
+  },
+  "workspaces": [
+    "packages/api",
+    "packages/contracts",
+    "packages/script",
+    "packages/app"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.51.0",
+    "prettier": "2.8.8",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+
+  }
+}
