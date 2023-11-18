@@ -31,4 +31,4 @@ COPY --from=prerelease /usr/src/app/tsconfig.json .
 
 # run the app
 USER bun
-ENTRYPOINT [ "bun", "run", "src/server.ts" ]
+ENTRYPOINT [ "bun", "run", "src/app.ts" ]
