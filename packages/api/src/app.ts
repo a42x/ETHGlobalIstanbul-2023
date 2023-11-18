@@ -1,9 +1,11 @@
 import express from 'express'
 import cors from 'cors'
-import { getContractAddress } from './helper'
-import { Address } from 'viem'
+import { getContractAddress, getNonceAndInitCode } from './helper'
+import { Address, encodeFunctionData } from 'viem'
 import { getPublicProvider } from './provider'
 import { getNetwork } from './network'
+import { abi as walletABI } from './Account.json'
+import { buildUserOperationAndHash, sendUserOperationToBundler } from './userOperationHelper'
 
 const app: express.Express = express()
 
@@ -36,6 +38,51 @@ app.get('/balance', async (req, res) => {
     const publicClient = getPublicProvider(network)
     const balance = await publicClient.getBalance({ address: address as Address })
     res.json({ balance })
+})
+
+app.post('/build', async (req, res) => {
+    try {
+        const { address, chainId, proof } = req.body
+        const chain = getNetwork(chainId)
+        const provider = getPublicProvider(chain)
+
+        const [nonce, initCode] = await getNonceAndInitCode(provider, address)
+
+        const callData = encodeFunctionData({
+            abi: walletABI,
+            functionName: 'verifyIdentity',
+            args: [proof]
+        })
+
+        const userOperationAndHash = await buildUserOperationAndHash(chain, address, nonce, callData, initCode)
+
+        const resp = {
+            userOperation: userOperationAndHash.userOperation,
+            userOpHash: userOperationAndHash.userOpHash
+        }
+        res.json(resp)
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({ error: 'error' })
+    }
+})
+
+app.post('/send', async (req, res) => {
+    try {
+        const { userOperation, chainId } = req.body
+        const chain = getNetwork(chainId)
+
+        const result = await sendUserOperationToBundler(chain, userOperation, true)
+        const resp = {
+            userOpHash: result.userOpHash,
+            transactionHash: result.transactionHash
+        }
+        console.log(resp)
+        return res.json(resp)
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({ error: 'error' })
+    }
 })
 
 app.listen(8080, () => {

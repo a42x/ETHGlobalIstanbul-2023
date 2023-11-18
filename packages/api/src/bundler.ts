@@ -6,14 +6,14 @@ import { PimlicoBundlerClient } from 'permissionless/clients/pimlico'
 
 const sepoliaBundlerClient = createClient({
     chain: sepolia,
-    transport: http(process.env.pimlico_sepolia_api_key) // Use any bundler url
+    transport: http(process.env.SEPOLIA_BUNDLER_RPC_URL_PIMLICO) // Use any bundler url
 })
     .extend(bundlerActions)
     .extend(pimlicoBundlerActions)
 
 const goerliBundlerClient = createClient({
     chain: goerli,
-    transport: http(process.env.pimlico_goerli_api_key) // Use any bundler url
+    transport: http(process.env.GOERLI_BUNDLER_RPC_URL_PIMLICO) // Use any bundler url
 })
     .extend(bundlerActions)
     .extend(pimlicoBundlerActions)

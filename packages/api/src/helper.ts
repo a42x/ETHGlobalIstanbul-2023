@@ -13,7 +13,7 @@ export async function getDeposit(senderAddress: Address, publicClient: PublicCli
 
 export async function getContractAddress(owner: Address, salt: bigint, publicClient: PublicClient): Promise<Address> {
     const account = getContract({
-        address: process.env.factory as Address,
+        address: process.env.FACTORY as Address,
         abi: parseAbi(['function getAddress(address owner, uint256 salt) view returns (address)']),
         publicClient
     })
@@ -50,7 +50,7 @@ export async function getNonceAndInitCode(publicClient: PublicClient, address: A
         const nonce = await getNonce(address, publicClient)
         return [nonce, '0x']
     } catch (_e) {
-        const initCode = createInitCode(process.env.factory as Address, address, BigInt(0))
+        const initCode = createInitCode(process.env.FACTORY as Address, address, BigInt(0))
         return [0n, initCode]
     }
 }
