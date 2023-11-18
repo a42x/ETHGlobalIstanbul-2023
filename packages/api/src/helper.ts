@@ -54,3 +54,12 @@ export async function getNonceAndInitCode(publicClient: PublicClient, address: A
         return [0n, initCode]
     }
 }
+
+export async function getEncryptedProof(uid: string, index: bigint, publicClient: PublicClient): Promise<string> {
+    const account = getContract({
+        address: '' as Address,
+        abi: factoryABI, // todo storage contract abi
+        publicClient
+    })
+    return (await account.read.getEncryptedMerkleProof([uid, index])) as string
+}
