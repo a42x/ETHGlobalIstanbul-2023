@@ -1,0 +1,9 @@
+node_modules/
+*.log
+*.json
+**.*.log
+**.*.json
+**.*.yml
+*.md
+*/yarn.lock
+package-lock.json
