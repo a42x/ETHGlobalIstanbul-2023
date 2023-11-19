@@ -1,0 +1,5 @@
+export const MATIC_CHAIN_ID = 137
+export const MUMBAI_CHAIN_ID = 80001
+export const SEPOLIA_CHAIN_ID = 11155111
+export const GOERLI_CHAIN_ID = 5
+export const networks = [MATIC_CHAIN_ID, SEPOLIA_CHAIN_ID, GOERLI_CHAIN_ID, MUMBAI_CHAIN_ID]
