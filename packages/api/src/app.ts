@@ -47,12 +47,18 @@ app.get('/proofs', async (req, res) => {
     const network = getNetwork(Number(chainId))
     const publicClient = getPublicProvider(network)
 
-    const proofPromises = (indices as string)
-        .split(',')
-        .map((index: string) => getEncryptedProof(uid as string, BigInt(Number(index)), publicClient))
-    const leafPromises = (indices as string)
-        .split(',')
-        .map((index: string) => getEncryptedLeaf(uid as string, BigInt(Number(index)), publicClient))
+    // URLエンコーディングされた文字列をデコードする
+    const decodedIndices = decodeURIComponent(indices as string)
+
+    // もしデコードした後、カンマで区切られた値を配列に変換したい場合は以下を使用する
+    const indicesArray = decodedIndices.split(',')
+
+    const proofPromises = indicesArray.map((index: string) =>
+        getEncryptedProof(uid as string, BigInt(Number(index)), publicClient)
+    )
+    const leafPromises = indicesArray.map((index: string) =>
+        getEncryptedLeaf(uid as string, BigInt(Number(index)), publicClient)
+    )
 
     const proofs = await Promise.all(proofPromises)
     const leaves = await Promise.all(leafPromises)
@@ -74,13 +80,13 @@ app.post('/build', async (req, res) => {
         const leavesHashes = leaves.map((leaf: string) => keccak256(toHex(leaf)))
 
         console.log({
-            args: [fundId, uid, dataIndices, leavesHashes, [proofs]]
+            args: [fundId, uid, dataIndices, leavesHashes, proofs]
         })
 
         const callData = encodeFunctionData({
             abi: unicefABI, // todo unicef contract abi
             functionName: 'verify',
-            args: [fundId, uid, dataIndices, leavesHashes, [proofs]]
+            args: [fundId, uid, dataIndices, leavesHashes, proofs]
         })
 
         // const callData = '0x'
