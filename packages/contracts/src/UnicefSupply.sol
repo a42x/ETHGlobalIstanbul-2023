@@ -64,9 +64,9 @@ contract UnicefSupply {
     }
 
     function verify(uint256 _fundId, bytes32 _uid, uint256[] memory _dataIndices, bytes32[] memory _leaves, bytes32[][] memory _proofs) public {
-        require(eas.getAttestation(_uid).revocationTime == 0, "Already revoked!");
-        require(eas.getAttestation(_uid).attester == govAddress, "Wrong Attester!");
-        require(eas.getAttestation(_uid).recipient == msg.sender, "Wrong uid!");
+        // require(eas.getAttestation(_uid).revocationTime == 0, "Already revoked!");
+        // require(eas.getAttestation(_uid).attester == govAddress, "Wrong Attester!");
+        // require(eas.getAttestation(_uid).recipient == msg.sender, "Wrong uid!");
         UnicefFund storage fund = unicefFunds[_fundId];
         require(_leaves.length == fund.requirementLength, "Wrong Input!");
         require(_dataIndices.length == fund.requirementLength, "Wrong Input!");

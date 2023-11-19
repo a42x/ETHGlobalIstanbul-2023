@@ -1,0 +1,15 @@
+contract MerkleProof{
+    pub fn verify(mut self, root: u256, leaf: u256, proof: Array<u256, 100>) -> bool{
+        let computed_hash: u256 = leaf
+
+        for element in proof{
+            if self.computed_hash < element {
+                self.computed_hash = keccak256(computed_hash + element)
+            }
+            else {
+                self.computed_hash = keccak256(element + computed_hash)
+            }
+        }
+        return self.computed_hash == root
+    }
+}
