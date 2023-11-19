@@ -8,7 +8,7 @@ contract MerkleProof {
      * @param proof Merkle Proof for the leaf
      * @return True if the leaf is part of the tree
      */
-    function verify(
+    function verifyMerkleProof(
         bytes32 root,
         bytes32 leaf,
         bytes32[] memory proof
